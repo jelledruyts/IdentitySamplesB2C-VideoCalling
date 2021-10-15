@@ -306,8 +306,9 @@ export const initCallAgent = (
     dispatch(setUserId(userId));
 
     const tokenCredential = new AzureCommunicationTokenCredential({
-      tokenRefresher: (): Promise<string> => {
-        return utils.getRefreshedTokenForUser(userId);
+      tokenRefresher: async (): Promise<string> => {
+        const tokenResponse: CommunicationUserToken = await utils.getTokenForUser();
+        return tokenResponse.token;
       },
       refreshProactively: true,
       token: userToken

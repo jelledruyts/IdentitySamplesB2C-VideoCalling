@@ -5,6 +5,8 @@ import { CommunicationUserToken } from '@azure/communication-identity';
 import { FeedbackSettings } from 'feedbacks/FeedbackSettings';
 import preval from 'preval.macro';
 import { RecordingSettings } from '../recording/RecordingSettings';
+import { PublicClientApplication } from "@azure/msal-browser";
+
 export declare interface RecordingApiResponse {
   message: string;
 }
@@ -16,12 +18,25 @@ export declare interface RecordingLinkResponse {
   message: string;
 }
 
+var msalInstance: PublicClientApplication | null = null;
+var msalScopes: string[] = [];
+
 export const utils = {
   getAppServiceUrl: (): string => {
     return window.location.origin;
   },
+  initializeMsal: (instance: PublicClientApplication, scopes: string[]) => {
+    msalInstance = instance;
+    msalScopes = scopes;
+  },
   getTokenForUser: async (): Promise<CommunicationUserToken> => {
-    const response = await fetch('/token');
+    if (msalInstance === null) {
+      throw new Error("MSAL isn't initialized");
+    }
+    const accounts = msalInstance.getAllAccounts();
+    const request = { scopes: msalScopes, account: accounts[0] };
+    const authResult = await msalInstance.acquireTokenSilent(request);
+    const response = await fetch('/token', { headers: new Headers ({ "Authorization": `Bearer ${authResult.accessToken}`})});
     if (response.ok) {
       return response.json();
     }
@@ -48,14 +63,6 @@ export const utils = {
       ...retJson,
       isRecordingEnabled: retJson.isRecordingEnabled.toLowerCase() === 'true'
     };
-  },
-  getRefreshedTokenForUser: async (identity: string): Promise<string> => {
-    const response = await fetch(`/refreshToken/${identity}`);
-    if (response.ok) {
-      const content = await response.json();
-      return content.token;
-    }
-    throw new Error('Invalid token response');
   },
   startRecording: async (id: string): Promise<RecordingApiResponse> => {
     try {

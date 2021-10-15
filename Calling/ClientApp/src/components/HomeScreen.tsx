@@ -12,10 +12,10 @@ import {
   headerStyle,
   upperStackTokens,
   videoCameraIconStyle,
-  buttonStyle,
   nestedStackTokens,
   upperStackStyle, listItemStyle
 } from './styles/HomeScreen.styles';
+import { useMsal } from "@azure/msal-react";
 
 export interface HomeScreenProps {
   startCallHandler(groupId: string): void;
@@ -35,19 +35,19 @@ export const HomeScreen = (props: HomeScreenProps): JSX.Element => {
   const groupId: string = createGUID();
   const iconName = 'SkypeCircleCheck';
   const imageProps = { src: heroSVG.toString() };
-  const headerTitle = 'Exceptionally simple video calling';
-  const startCallButtonText = 'Start a call';
-  const joinTeamsCallText = 'Join a Teams Meeting';
+  const headerTitle = 'Video Calling';
+  const startCallButtonText = 'Start a call that others can join';
+  const joinTeamsCallText = 'Join a Teams meeting';
   const listItems = [
-    'Customize with your web stack',
-    'Connect with users with seamless collaboration across web',
-    'High quality, low latency capabilities for an uninterrupted calling experience',
-    'Learn about this'
+    'Connect with other users of this platform',
+    'Get in touch with our call center via a Teams meeting link'
   ];
+  const { instance } = useMsal();
   return (
     <Stack horizontal horizontalAlign="center" verticalAlign="center" tokens={containerTokens}>
       <Stack className={upperStackStyle} tokens={upperStackTokens}>
         <div className={headerStyle}>{headerTitle}</div>
+        <div>Welcome, <b>{instance.getAllAccounts()[0].username}</b>! <button onClick={() => instance.logout()}>Log out</button></div>
         <Stack tokens={nestedStackTokens}>
             <ul className={listStyle}>
                 <li className={listItemStyle}>
@@ -56,17 +56,10 @@ export const HomeScreen = (props: HomeScreenProps): JSX.Element => {
                 <li className={listItemStyle}>
                     <Icon className={iconStyle} iconName={iconName} /> {listItems[1]}
                 </li>
-                <li className={listItemStyle}>
-                    <Icon className={iconStyle} iconName={iconName} /> {listItems[2]}
-                </li>
-                <li className={listItemStyle}>
-                    <Icon className={iconStyle} iconName={iconName} /> {listItems[3]}{' '}
-                    <a href="https://docs.microsoft.com/en-us/azure/communication-services/samples/calling-hero-sample?pivots=platform-web">sample</a>
-                </li>
             </ul>
         </Stack>
         <Stack.Item>
-          <PrimaryButton className={buttonStyle} onClick={() => props.startCallHandler(groupId)}>
+          <PrimaryButton onClick={() => props.startCallHandler(groupId)}>
             <VideoCameraEmphasisIcon className={videoCameraIconStyle} size="medium" />
             {startCallButtonText}
           </PrimaryButton>
@@ -77,7 +70,7 @@ export const HomeScreen = (props: HomeScreenProps): JSX.Element => {
             <VideoCameraEmphasisIcon className={videoCameraIconStyle} size="medium" />
             {joinTeamsCallText}
           </PrimaryButton>
-        <TextField onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => { newValue === undefined ? setMeetingUrl('') : setMeetingUrl(newValue)}} />
+        <TextField placeholder="Enter a Teams meeting link which you received" onChange={(event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => { newValue === undefined ? setMeetingUrl('') : setMeetingUrl(newValue)}} />
         </Stack.Item>
       </Stack>
       <Image

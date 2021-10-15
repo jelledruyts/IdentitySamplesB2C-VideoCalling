@@ -24,6 +24,7 @@ import {
   fullScreenStyle,
   verticalStackStyle
 } from './styles/Configuration.styles';
+import { useMsal } from "@azure/msal-react";
 
 export interface ConfigurationScreenProps {
   userId: string;
@@ -53,8 +54,9 @@ export interface ConfigurationScreenProps {
 export const Configuration = (props: ConfigurationScreenProps): JSX.Element => {
   const spinnerLabel = 'Initializing call client...';
   const buttonText = 'Start call';
+  const { instance } = useMsal();
 
-  const createUserId = () => 'user' + Math.ceil(Math.random() * 1000);
+  const createUserId = () => instance.getAllAccounts()[0].username;
 
   const [name, setName] = useState(createUserId());
   const [emptyWarning, setEmptyWarning] = useState(false);

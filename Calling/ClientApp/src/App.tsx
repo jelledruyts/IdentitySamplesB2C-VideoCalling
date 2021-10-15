@@ -10,6 +10,8 @@ import { utils } from './Utils/Utils';
 import { CallEndReason, GroupLocator, TeamsMeetingLinkLocator } from '@azure/communication-calling';
 import { store } from 'core/store';
 import { initLogger } from 'feedbacks/logger';
+import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
+import { useMsal } from "@azure/msal-react";
 
 const sdkVersion = require('../package.json').dependencies['@azure/communication-calling'];
 const lastUpdated = `Last Updated ${utils.getBuildTime()} with @azure/communication-calling:${sdkVersion}`;
@@ -138,7 +140,16 @@ const App = (): JSX.Element => {
     setPage('configuration');
   }
 
-  return <Provider store={store}>{getContent()}</Provider>;
+  const { instance } = useMsal();
+
+  return <Provider store={store}>
+    <AuthenticatedTemplate>
+      {getContent()}
+    </AuthenticatedTemplate>
+    <UnauthenticatedTemplate>
+      <div>Welcome! Please <button onClick={() => instance.loginPopup()}>log in</button> to access our video calling environment.</div>
+    </UnauthenticatedTemplate>
+  </Provider>;
 };
 
 window.setTimeout(() => {
