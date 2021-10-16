@@ -21,7 +21,7 @@ namespace Calling
             {
                 b2cTenantName = this.configuration["AzureAdB2C:Domain"].Replace(".onmicrosoft.com", string.Empty, StringComparison.InvariantCultureIgnoreCase),
                 b2cClientId = this.configuration["AzureAdB2C:ClientId"],
-                signUpSignInPolicyId = this.configuration["AzureAdB2C:PolicyId"]
+                signUpSignInPolicyId = this.configuration["AzureAdB2C:SignUpSignInPolicyId"]
             };
             return this.Ok(clientResponse);
         }

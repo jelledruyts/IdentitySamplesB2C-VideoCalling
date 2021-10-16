@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - main
+    paths:
+      - "Calling/**"
   workflow_dispatch:
 
 jobs:
