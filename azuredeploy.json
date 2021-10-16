@@ -1,0 +1,107 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "communicationServicesName": {
+            "type": "String"
+        },
+        "appServiceWebAppName": {
+            "type": "String"
+        },
+        "appServicePlanName": {
+            "type": "String"
+        },
+        "azureAdB2cDomain": {
+            "type": "String",
+            "defaultValue": "<tenant-name>.onmicrosoft.com"
+        },
+        "azureAdB2cInstance": {
+            "type": "String",
+            "defaultValue": "https://<tenant-name>.b2clogin.com/tfp/"
+        },
+        "azureAdB2cClientId": {
+            "type": "String",
+            "defaultValue": "<client-id>"
+        },
+        "azureAdB2cSignUpSignInPolicyId": {
+            "type": "String",
+            "defaultValue": "<policy-id-signupsignin>"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('communicationServicesName')]",
+            "type": "Microsoft.Communication/communicationServices",
+            "apiVersion": "2020-08-20-preview",
+            "location": "global",
+            "tags": {},
+            "properties": {
+                "dataLocation": "United States"
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/serverfarms",
+            "name": "[parameters('appServicePlanName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "linux",
+            "sku": {
+                "Name": "F1"
+            },
+            "properties": {
+                "name": "[parameters('appServicePlanName')]",
+                "reserved": true
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[parameters('appServiceWebAppName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]",
+                "[resourceId('Microsoft.Communication/communicationServices', parameters('communicationServicesName'))]"
+            ],
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "ResourceConnectionString",
+                            "value": "[listkeys(parameters('communicationServicesName'), '2020-08-20-preview' ).primaryConnectionString]"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "14.18.1"
+                        },
+                        {
+                            "name": "AzureAdB2C__Domain",
+                            "value": "[parameters('azureAdB2cDomain')]"
+                        },
+                        {
+                            "name": "AzureAdB2C__Instance",
+                            "value": "[parameters('azureAdB2cInstance')]"
+                        },
+                        {
+                            "name": "AzureAdB2C__ClientId",
+                            "value": "[parameters('azureAdB2cClientId')]"
+                        },
+                        {
+                            "name": "AzureAdB2C__SignUpSignInPolicyId",
+                            "value": "[parameters('azureAdB2cSignUpSignInPolicyId')]"
+                        },
+                        {
+                            "name": "ASPNETCORE_FORWARDEDHEADERS_ENABLED",
+                            "value": "true"
+                        },
+                        {
+                            "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                            "value": "false"
+                        }
+                    ],
+                    "linuxFxVersion": "DOCKER|jelledruyts/identitysamplesb2c-videocalling"
+                }
+            }
+        }
+    ]
+}
