@@ -68,7 +68,7 @@
                     "appSettings": [
                         {
                             "name": "ResourceConnectionString",
-                            "value": "[listkeys(parameters('communicationServicesName'), '2020-08-20-preview' ).primaryConnectionString]"
+                            "value": "[listkeys(resourceId('Microsoft.Communication/communicationServices', parameters('communicationServicesName')), '2020-08-20-preview').primaryConnectionString]"
                         },
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
